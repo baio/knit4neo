@@ -47,7 +47,7 @@ def convert():
                 node_ix += 2
                 for p in i["predicates"]:
                     if n_1.id != n_2.id:
-                        predicates.append(p)
+                        predicates.append((p, str(i["_id"])))
                         batch.get_or_create_indexed_relationship(p["type"][:2], "knows", "{}&{}&{}".format(n_1.id, n_2.id, p["type"]), n_1, p["type"], n_2)
 
             relations = batch.submit()
@@ -56,9 +56,13 @@ def convert():
                 r = relations[ix]
                 p = predicates[ix]
                 tags = r.get_properties().get("tags", [])
-                tags += [p["val"]]
+                refs = r.get_properties().get("refs", [])
+                tags += [p[0]["val"]]
+                refs += [p[1]]
                 tags = list(set(tags))
+                refs = list(set(refs))
                 batch.set_property(r, "tags", tags)
+                batch.set_property(r, "refs", refs)
 
             batch.submit()
 
